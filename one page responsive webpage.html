@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practical 9 — WebCraft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --card: #1a1a26;
+      --accent1: #ff6b35;
+      --accent2: #7c5cbf;
+      --accent3: #00d4aa;
+      --text: #f0eeff;
+      --muted: #8887a8;
+      --border: rgba(255,255,255,0.08);
+      --nav-h: 72px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: var(--nav-h);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .logo { font-family: 'Syne', sans-serif; }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* ── NAVBAR ── */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px;
+      z-index: 999;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+    .logo span { color: var(--accent1); }
+
+    .nav-links {
+      list-style: none;
+      display: flex; gap: 8px;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      transition: all 0.3s;
+    }
+    .nav-links a:hover {
+      color: var(--text);
+      background: var(--border);
+    }
+
+    /* Mobile hamburger */
+    #menu-toggle { display: none; }
+    .hamburger {
+      display: none;
+      flex-direction: column; gap: 5px;
+      cursor: pointer; padding: 4px;
+    }
+    .hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    /* ── HERO ── */
+    #home {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: calc(var(--nav-h) + 60px) 40px 60px;
+      position: relative; overflow: hidden;
+    }
+
+    .hero-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .blob1 {
+      width: 500px; height: 500px;
+      background: var(--accent2);
+      top: -100px; right: -100px;
+      animation: blobFloat 8s ease-in-out infinite;
+    }
+    .blob2 {
+      width: 350px; height: 350px;
+      background: var(--accent1);
+      bottom: 50px; left: -80px;
+      animation: blobFloat 10s ease-in-out infinite reverse;
+    }
+    .blob3 {
+      width: 250px; height: 250px;
+      background: var(--accent3);
+      top: 50%; right: 25%;
+      animation: blobFloat 12s ease-in-out infinite 2s;
+    }
+    @keyframes blobFloat {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      33%       { transform: translate(20px,-20px) scale(1.05); }
+      66%       { transform: translate(-10px,15px) scale(0.95); }
+    }
+
+    .hero-inner {
+      max-width: 1200px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+      position: relative; z-index: 1;
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent3); font-weight: 500;
+      background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.25);
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 24px;
+    }
+    .hero-tag::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent3);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .hero-title {
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      margin-bottom: 24px;
+    }
+    .hero-title .line2 { color: var(--accent1); }
+
+    .hero-desc {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 440px;
+      margin-bottom: 40px;
+    }
+
+    .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      text-decoration: none; border-radius: 10px;
+      font-weight: 500; font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; padding: 12px 24px;
+      transition: all 0.3s; cursor: pointer; border: none;
+    }
+    .btn-primary {
+      background: var(--accent1); color: #fff;
+      box-shadow: 0 4px 30px rgba(255,107,53,0.4);
+    }
+    .btn-primary:hover {
+      background: #ff8559;
+      box-shadow: 0 8px 40px rgba(255,107,53,0.55);
+      transform: translateY(-2px);
+    }
+    .btn-ghost {
+      background: var(--border); color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Hero visual */
+    .hero-visual {
+      position: relative; display: flex; justify-content: center;
+    }
+    .hero-card-stack { position: relative; width: 320px; height: 360px; }
+    .hcard {
+      position: absolute; border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 24px;
+    }
+    .hcard1 {
+      width: 260px; height: 160px;
+      background: var(--card);
+      top: 0; left: 0;
+      transform: rotate(-6deg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hcard1-inner {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .hcard-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .hcard2 {
+      width: 240px; height: 120px;
+      background: linear-gradient(135deg, rgba(124,92,191,0.25), rgba(10,10,15,0.5));
+      border-color: rgba(124,92,191,0.3);
+      bottom: 60px; right: 0;
+      transform: rotate(4deg);
+      display: flex; flex-direction: column; justify-content: center; gap: 8px;
+    }
+    .hcard3 {
+      width: 200px; height: 100px;
+      background: linear-gradient(135deg, rgba(0,212,170,0.15), rgba(10,10,15,0.5));
+      border-color: rgba(0,212,170,0.3);
+      bottom: 0; left: 20px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem; font-weight: 800;
+      color: var(--accent3);
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); }
+    .bar-row { display: flex; gap: 6px; align-items: center; }
+    .bar {
+      height: 6px; border-radius: 3px; flex: 1;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 3px;
+      background: var(--accent2);
+      animation: barGrow 2s ease forwards 1s;
+    }
+    @keyframes barGrow { from { width: 0; } }
+    .bar-fill.b1 { width: 80%; }
+    .bar-fill.b2 { width: 55%; animation-delay: 1.2s; }
+    .bar-fill.b3 { width: 70%; animation-delay: 1.4s; }
+    .bar-label { font-size: 0.7rem; color: var(--muted); width: 30px; text-align: right; }
+
+    /* ── SECTION WRAPPER ── */
+    .section {
+      padding: 100px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent1); font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .section-label::before {
+      content: '';
+      display: block; width: 24px; height: 2px;
+      background: var(--accent1); border-radius: 1px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800; letter-spacing: -0.03em;
+      margin-bottom: 48px;
+    }
+    .section-title span { color: var(--accent1); }
+
+    /* ── TEAM ── */
+    #team { padding: 100px 40px; background: var(--surface); }
+    #team .inner { max-width: 1200px; margin: 0 auto; }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .team-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 24px;
+      text-align: center;
+      transition: all 0.4s;
+      position: relative; overflow: hidden;
+    }
+    .team-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      transform: scaleX(0);
+      transition: transform 0.4s;
+    }
+    .team-card:hover::before { transform: scaleX(1); }
+    .team-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(255,107,53,0.3);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .member-avatar {
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+    .member-avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover; border-radius: 50%;
+    }
+    .avatar-ring {
+      position: absolute; inset: -4px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2)) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+    }
+    .member-avatar-placeholder {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; font-weight: 800; font-family: 'Syne', sans-serif;
+    }
+
+    .member-name {
+      font-size: 1.05rem; font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .member-role {
+      font-size: 0.8rem; color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .member-socials { display: flex; gap: 8px; justify-content: center; }
+    .member-socials a {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--border); border: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 0.75rem;
+      text-decoration: none; transition: all 0.3s;
+    }
+    .member-socials a:hover {
+      background: var(--accent1); color: #fff;
+      border-color: var(--accent1);
+    }
+
+    /* ── ABOUT ── */
+    #about { background: var(--bg); }
+    .about-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start;
+    }
+
+    .about-left { }
+    .about-text {
+      color: var(--muted); font-size: 1rem;
+      margin-bottom: 32px; line-height: 1.9;
+    }
+
+    .feature-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.8rem; padding: 6px 14px;
+      border-radius: 100px;
+      background: rgba(124,92,191,0.15);
+      border: 1px solid rgba(124,92,191,0.3);
+      color: #b39dff;
+    }
+    .pill i { font-size: 0.7rem; }
+
+    .about-right { display: flex; flex-direction: column; gap: 20px; }
+
+    .project-card {
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      height: 150px;
+      cursor: pointer;
+      transition: transform 0.4s;
+    }
+    .project-card:hover { transform: scale(1.02); }
+    .project-card-bg {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .project-card-content {
+      position: absolute; inset: 0;
+      display: flex; align-items: flex-end;
+      padding: 20px;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+    }
+    .project-card-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 1.1rem;
+    }
+    .project-card-tag {
+      font-size: 0.7rem; color: rgba(255,255,255,0.7);
+    }
+
+    .pc1 .project-card-bg { background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); }
+    .pc2 .project-card-bg { background: linear-gradient(135deg, #1a0a2e, #2d1b69, #11998e); }
+    .pc3 .project-card-bg { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+
+    /* Geometric shapes in project cards */
+    .geo { position: absolute; border-radius: 50%; opacity: 0.3; }
+    .geo1 { width: 80px; height: 80px; background: var(--accent1); top: -20px; right: 30px; }
+    .geo2 { width: 50px; height: 50px; background: var(--accent3); bottom: 10px; right: 80px; border-radius: 8px; transform: rotate(45deg); }
+    .geo3 { width: 60px; height: 60px; background: var(--accent2); top: 20px; left: 40px; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); border-radius: 0; }
+
+    /* ── TECHNOLOGIES ── */
+    #technologies { background: var(--surface); }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .tech-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      transition: all 0.4s;
+      display: flex; flex-direction: column;
+    }
+    .tech-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      border-color: rgba(255,107,53,0.25);
+    }
+
+    .tech-icon-wrap {
+      width: 60px; height: 60px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+
+    .tech-card h3 {
+      font-size: 1rem; font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .tech-card p {
+      font-size: 0.85rem; color: var(--muted);
+      line-height: 1.7; flex: 1;
+      margin-bottom: 20px;
+    }
+    .tech-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.82rem; font-weight: 500;
+      color: var(--accent1); text-decoration: none;
+      transition: gap 0.3s;
+    }
+    .tech-link:hover { gap: 10px; }
+    .tech-link i { font-size: 0.7rem; }
+
+    .tech-card:nth-child(1) .tech-icon-wrap { background: rgba(255,107,53,0.15); color: var(--accent1); }
+    .tech-card:nth-child(2) .tech-icon-wrap { background: rgba(124,92,191,0.15); color: #b39dff; }
+    .tech-card:nth-child(3) .tech-icon-wrap { background: rgba(0,212,170,0.15); color: var(--accent3); }
+    .tech-card:nth-child(4) .tech-icon-wrap { background: rgba(255,200,50,0.15); color: #ffc832; }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--bg); }
+    .contact-inner {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .contact-left { }
+    .contact-left .section-title { margin-bottom: 16px; }
+    .contact-desc { color: var(--muted); font-size: 1rem; margin-bottom: 40px; line-height: 1.8; }
+    .contact-info { display: flex; flex-direction: column; gap: 16px; }
+    .contact-info-item {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .info-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--card); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent1); font-size: 0.9rem; flex-shrink: 0;
+    }
+    .info-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 2px; }
+    .info-value { font-size: 0.9rem; font-weight: 500; }
+
+    .contact-right { }
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .form-group label { font-size: 0.82rem; color: var(--muted); letter-spacing: 0.04em; }
+    .form-group input,
+    .form-group textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      transition: border-color 0.3s;
+      outline: none;
+      resize: none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent1);
+      box-shadow: 0 0 0 3px rgba(255,107,53,0.15);
+    }
+    .form-group textarea { height: 110px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 40px;
+      text-align: center;
+    }
+    .footer-inner { max-width: 1200px; margin: 0 auto; }
+    .footer-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem; font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .footer-logo span { color: var(--accent1); }
+    .footer-copy { font-size: 0.82rem; color: var(--muted); }
+    .footer-copy a { color: var(--accent3); text-decoration: none; }
+    .footer-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 16px;
+      font-size: 0.82rem; color: var(--muted);
+      text-decoration: none; transition: color 0.3s;
+    }
+    .footer-back:hover { color: var(--accent1); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .team-grid { grid-template-columns: repeat(2, 1fr); }
+      .tech-grid { grid-template-columns: repeat(2, 1fr); }
+      .about-grid { grid-template-columns: 1fr; }
+      .contact-inner { grid-template-columns: 1fr; gap: 50px; }
+      .hero-inner { grid-template-columns: 1fr; text-align: center; }
+      .hero-visual { display: none; }
+      .hero-desc { margin: 0 auto 40px; }
+      .hero-btns { justify-content: center; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; flex-direction: column; }
+      .hamburger { display: flex; }
+
+      #menu-toggle:checked ~ .nav-links {
+        display: flex;
+        position: fixed;
+        top: var(--nav-h); left: 0; right: 0;
+        background: rgba(10,10,15,0.97);
+        backdrop-filter: blur(20px);
+        padding: 24px;
+        border-bottom: 1px solid var(--border);
+        gap: 4px;
+      }
+      #menu-toggle:checked ~ .nav-links a { padding: 12px 16px; }
+
+      #navbar { padding: 0 20px; }
+      .section { padding: 70px 20px; }
+      #team { padding: 70px 20px; }
+      #technologies { padding: 70px 20px; }
+      #contact { padding: 70px 20px; }
+      #home { padding: calc(var(--nav-h) + 40px) 20px 40px; }
+
+      .team-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+      .tech-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+
+      .section-title { font-size: 1.8rem; }
+    }
+
+    @media (max-width: 500px) {
+      .team-grid { grid-template-columns: 1fr; max-width: 320px; margin: 0 auto; }
+      .tech-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .fade-up {
+      opacity: 0; transform: translateY(30px);
+      animation: fadeUp 0.8s ease forwards;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up:nth-child(2) { animation-delay: 0.1s; }
+    .fade-up:nth-child(3) { animation-delay: 0.2s; }
+    .fade-up:nth-child(4) { animation-delay: 0.3s; }
+
+    /* Stagger delays for cards */
+    .team-card:nth-child(1) { animation-delay: 0s; }
+    .team-card:nth-child(2) { animation-delay: 0.1s; }
+    .team-card:nth-child(3) { animation-delay: 0.2s; }
+    .team-card:nth-child(4) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="logo">Web<span>Craft</span></div>
+  <input type="checkbox" id="menu-toggle" hidden />
+  <label class="hamburger" for="menu-toggle">
+    <span></span><span></span><span></span>
+  </label>
+  <ul class="nav-links">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#technologies">Technologies</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="home">
+  <div class="hero-blob blob1"></div>
+  <div class="hero-blob blob2"></div>
+  <div class="hero-blob blob3"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-tag">Practical 9 — Web Technologies</div>
+      <h1 class="hero-title">
+        Building the<br>
+        <span class="line2">Modern Web</span><br>
+        Together
+      </h1>
+      <p class="hero-desc">
+        A showcase of responsive design principles, modern CSS techniques, and collaborative web development. Crafted with precision and passion.
+      </p>
+      <div class="hero-btns">
+        <a href="#team" class="btn btn-primary"><i class="fas fa-users"></i> Meet the Team</a>
+        <a href="#technologies" class="btn btn-ghost"><i class="fas fa-code"></i> Our Stack</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card-stack">
+        <div class="hcard hcard1">
+          <div class="hcard1-inner">
+            <div class="hcard-icon" style="background:rgba(255,107,53,0.15);color:var(--accent1);"><i class="fas fa-globe"></i></div>
+            <div style="text-align:center;">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;">Responsive Design</div>
+              <div style="font-size:0.75rem;color:var(--muted);">Mobile First</div>
+            </div>
+          </div>
+        </div>
+        <div class="hcard hcard2">
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px;">Skills Progress</div>
+          <div class="bar-row"><span style="font-size:0.7rem;color:var(--muted);width:28px">HTML</span><div class="bar"><div class="bar-fill b1"></div></div><span class="bar-label">80%</span></div>
+          <div class="bar-row"><span style="font-size:0.7rem;color:var(--muted);width:28px">CSS</span><div class="bar"><div class="bar-fill b2" style="background:var(--accent3)"></div></div><span class="bar-label">55%</span></div>
+          <div class="bar-row"><span style="font-size:0.7rem;color:var(--muted);width:28px">JS</span><div class="bar"><div class="bar-fill b3" style="background:var(--accent1)"></div></div><span class="bar-label">70%</span></div>
+        </div>
+        <div class="hcard hcard3">
+          <div class="stat-num">4</div>
+          <div>
+            <div style="font-weight:700;font-size:0.9rem;">Team</div>
+            <div class="stat-label">Members</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="inner">
+    <div class="section-label">The People</div>
+    <h2 class="section-title">Meet Our <span>Team</span></h2>
+    <div class="team-grid">
+
+      <div class="team-card">
+        <div class="member-avatar">
+          <div class="member-avatar-placeholder" style="background:linear-gradient(135deg,#ff6b35,#7c5cbf);">A</div>
+          <div class="avatar-ring"></div>
+        </div>
+        <div class="member-name">Alex Rivera</div>
+        <div class="member-role">Frontend Lead</div>
+        <div class="member-socials">
+          <a href="#"><i class="fab fa-github"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+        </div>
+      </div>
+
+      <div class="team-card">
+        <div class="member-avatar">
+          <div class="member-avatar-placeholder" style="background:linear-gradient(135deg,#7c5cbf,#00d4aa);">S</div>
+          <div class="avatar-ring"></div>
+        </div>
+        <div class="member-name">Sam Chen</div>
+        <div class="member-role">UI/UX Designer</div>
+        <div class="member-socials">
+          <a href="#"><i class="fab fa-github"></i></a>
+          <a href="#"><i class="fab fa-dribbble"></i></a>
+          <a href="#"><i class="fab fa-behance"></i></a>
+        </div>
+      </div>
+
+      <div class="team-card">
+        <div class="member-avatar">
+          <div class="member-avatar-placeholder" style="background:linear-gradient(135deg,#00d4aa,#ff6b35);">J</div>
+          <div class="avatar-ring"></div>
+        </div>
+        <div class="member-name">Jordan Park</div>
+        <div class="member-role">JS Developer</div>
+        <div class="member-socials">
+          <a href="#"><i class="fab fa-github"></i></a>
+          <a href="#"><i class="fab fa-stack-overflow"></i></a>
+          <a href="#"><i class="fab fa-dev"></i></a>
+        </div>
+      </div>
+
+      <div class="team-card">
+        <div class="member-avatar">
+          <div class="member-avatar-placeholder" style="background:linear-gradient(135deg,#ffc832,#ff6b35);">M</div>
+          <div class="avatar-ring"></div>
+        </div>
+        <div class="member-name">Maya Patel</div>
+        <div class="member-role">Content Strategist</div>
+        <div class="member-socials">
+          <a href="#"><i class="fab fa-github"></i></a>
+          <a href="#"><i class="fab fa-medium-m"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section">
+    <div class="section-label">Our Story</div>
+    <h2 class="section-title">About <span>Us</span></h2>
+    <div class="about-grid">
+      <div class="about-left">
+        <p class="about-text">
+          We are a team of passionate web technology students dedicated to mastering the art and science of the modern web. This project represents our collective journey through HTML, CSS, JavaScript, and beyond.
+        </p>
+        <p class="about-text">
+          From wireframe to pixel-perfect execution, we focus on crafting experiences that are not only visually compelling but also accessible, performant, and responsive across all devices.
+        </p>
+        <div class="feature-pills">
+          <div class="pill"><i class="fas fa-mobile-alt"></i> Responsive</div>
+          <div class="pill"><i class="fas fa-universal-access"></i> Accessible</div>
+          <div class="pill"><i class="fas fa-bolt"></i> Performant</div>
+          <div class="pill"><i class="fas fa-paint-brush"></i> Beautiful</div>
+          <div class="pill"><i class="fas fa-layer-group"></i> Semantic HTML</div>
+          <div class="pill"><i class="fas fa-magic"></i> Animated</div>
+        </div>
+        <a href="#technologies" class="btn btn-primary" style="width:fit-content;"><i class="fas fa-arrow-right"></i> See Our Stack</a>
+      </div>
+      <div class="about-right">
+        <div class="project-card pc1">
+          <div class="project-card-bg">
+            <div class="geo geo1"></div>
+            <div class="geo geo2"></div>
+          </div>
+          <div class="project-card-content">
+            <div>
+              <div class="project-card-title">Project Alpha</div>
+              <div class="project-card-tag">Interactive Dashboard · HTML/CSS/JS</div>
+            </div>
+          </div>
+        </div>
+        <div class="project-card pc2">
+          <div class="project-card-bg">
+            <div class="geo geo3" style="background:var(--accent1);right:40px;left:auto;"></div>
+            <div class="geo geo2" style="background:var(--accent2);bottom:auto;top:10px;left:80px;"></div>
+          </div>
+          <div class="project-card-content">
+            <div>
+              <div class="project-card-title">Project Beta</div>
+              <div class="project-card-tag">E-Commerce UI · Responsive Layout</div>
+            </div>
+          </div>
+        </div>
+        <div class="project-card pc3">
+          <div class="project-card-bg">
+            <div class="geo" style="width:70px;height:70px;background:var(--accent3);top:10px;right:20px;opacity:0.3;"></div>
+          </div>
+          <div class="project-card-content">
+            <div>
+              <div class="project-card-title">Project Gamma</div>
+              <div class="project-card-tag">Portfolio Site · CSS Animations</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECHNOLOGIES -->
+<section id="technologies">
+  <div class="section">
+    <div class="section-label">Our Stack</div>
+    <h2 class="section-title">Technologies <span>Used</span></h2>
+    <div class="tech-grid">
+
+      <div class="tech-card">
+        <div class="tech-icon-wrap"><i class="fab fa-html5"></i></div>
+        <h3>HTML5</h3>
+        <p>The backbone of every webpage. We use semantic, accessible markup to build clean, structured content that search engines and screen readers love.</p>
+        <a href="#" class="tech-link">Explore <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-icon-wrap"><i class="fab fa-css3-alt"></i></div>
+        <h3>CSS3</h3>
+        <p>From Flexbox and Grid to custom animations and responsive breakpoints — CSS is how we transform raw markup into stunning visual experiences.</p>
+        <a href="#" class="tech-link">Explore <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-icon-wrap"><i class="fab fa-js"></i></div>
+        <h3>JavaScript</h3>
+        <p>Interactivity, logic, and dynamic content. JavaScript brings our interfaces to life, enabling rich user experiences across every browser.</p>
+        <a href="#" class="tech-link">Explore <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-icon-wrap"><i class="fab fa-bootstrap"></i></div>
+        <h3>Bootstrap</h3>
+        <p>A powerful utility framework for rapid prototyping and consistent UI components — helping us build responsive grids in record time.</p>
+        <a href="#" class="tech-link">Explore <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section">
+    <div class="contact-inner">
+      <div class="contact-left">
+        <div class="section-label">Get In Touch</div>
+        <h2 class="section-title">Let's <span>Connect</span></h2>
+        <p class="contact-desc">
+          Have a project idea or just want to say hello? We'd love to hear from you. Drop us a message and we'll get back to you as soon as possible.
+        </p>
+        <div class="contact-info">
+          <div class="contact-info-item">
+            <div class="info-icon"><i class="fas fa-envelope"></i></div>
+            <div>
+              <div class="info-label">Email</div>
+              <div class="info-value">hello@webcraft.dev</div>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+              <div class="info-label">Location</div>
+              <div class="info-value">Greater Noida, UP, India</div>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <div class="info-icon"><i class="fas fa-graduation-cap"></i></div>
+            <div>
+              <div class="info-label">Course</div>
+              <div class="info-value">Web Technologies — Practical 9</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="contact-right">
+        <div class="form-card">
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" placeholder="Alex" />
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" placeholder="Rivera" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" placeholder="hello@example.com" />
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" placeholder="What's this about?" />
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea placeholder="Tell us more..."></textarea>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:0.95rem;">
+            <i class="fas fa-paper-plane"></i> Send Message
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Web<span>Craft</span></div>
+    <p class="footer-copy">
+      &copy; 2025 WebCraft Team · Practical 9 Web Technologies ·
+      Built with <span style="color:var(--accent1);">❤</span> and lots of CSS
+    </p>
+    <a href="#home" class="footer-back">
+      <i class="fas fa-arrow-up"></i> Back to Top
+    </a>
+  </div>
+</footer>
+
+</body>
+</html>
